@@ -42,8 +42,7 @@ body{
   display:flex;
   align-items:center;
   gap: 10px;
-  min-width: 220px;
-  transform: translateX(-28px);
+  margin-left: 56px;   /* moves logo to red position */
 }
 .logo i{
   font-size: 1.9rem;
