@@ -43,6 +43,7 @@ body{
   align-items:center;
   gap: 10px;
   min-width: 220px;
+  transform: translateX(-28px);
 }
 .logo i{
   font-size: 1.9rem;
@@ -55,7 +56,6 @@ body{
   -webkit-background-clip:text;
   background-clip:text;
   color: transparent;
-  margin-left: -18px;
 }
 .navlist{
   display:flex;
