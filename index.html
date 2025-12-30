@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ogwXblacklist</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="dashboard-header">
+    <div class="header-content">
+      <button class="icon-btn shield" id="admin-shield" title="Admin">
+        <i class="fa-solid fa-shield-halved"></i>
+      </button>
+
+      <div class="logo">
+        <i class="fa-solid fa-ban"></i>
+        <h1>ogwXblacklist</h1>
+      </div>
+
+      <nav>
+        <ul class="navlist">
+          <li><button class="nav-link" id="nav-request"><i class="fa-solid fa-plus"></i> Request</button></li>
+          <li><button class="nav-link active" data-tab="blacklist"><i class="fa-solid fa-list"></i> Blacklist</button></li>
+          <li><button class="nav-link" data-tab="yours"><i class="fa-solid fa-user"></i> Your Posts</button></li>
+          <li class="admin-only hidden"><button class="nav-link" data-tab="admin-reports"><i class="fa-solid fa-flag"></i> Reports</button></li>
+          <li class="admin-only hidden"><button class="nav-link" data-tab="admin-requests"><i class="fa-solid fa-user-check"></i> Requests</button></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="dashboard-container">
+    <!-- BLACKLIST -->
+    <section class="tab-content active" id="tab-blacklist">
+      <div class="category-tabs">
+        <button class="category-tab active" data-category="verified">Verified</button>
+        <button class="category-tab" data-category="requested">Requested</button>
+        <button class="category-tab" data-category="unverified">Unverified</button>
+      </div>
+
+      <div class="users-grid-three-column" id="posts-grid"></div>
+
+      <div class="status info hidden" id="posts-empty">
+        <i class="fa-solid fa-inbox"></i>
+        <span>No posts in this category yet.</span>
+      </div>
+    </section>
+
+    <!-- YOUR POSTS -->
+    <section class="tab-content" id="tab-yours">
+      <div class="info-card">
+        <h3><i class="fa-solid fa-user"></i> Your Posts</h3>
+        <p>These are posts created from this device/browser (local).</p>
+      </div>
+
+      <div class="users-grid-three-column" id="your-posts-grid"></div>
+
+      <div class="status info hidden" id="your-posts-empty">
+        <i class="fa-solid fa-circle-plus"></i>
+        <span>No posts yet. Click <b>Request</b> to create one.</span>
+      </div>
+    </section>
+
+    <!-- ADMIN REPORTS -->
+    <section class="tab-content" id="tab-admin-reports">
+      <div class="info-card">
+        <h3><i class="fa-solid fa-flag"></i> Reports</h3>
+        <p>Dismiss clears all reports for that post.</p>
+      </div>
+
+      <div class="events-grid" id="reports-grid"></div>
+
+      <div class="status info hidden" id="reports-empty">
+        <i class="fa-solid fa-shield-heart"></i>
+        <span>No reported posts.</span>
+      </div>
+    </section>
+
+    <!-- ADMIN REQUESTS -->
+    <section class="tab-content" id="tab-admin-requests">
+      <div class="info-card">
+        <h3><i class="fa-solid fa-user-check"></i> Verification Requests</h3>
+        <p>Verify → moves to Verified. Reject → moves to Unverified and marks Declined.</p>
+      </div>
+
+      <div class="events-grid" id="requests-grid"></div>
+
+      <div class="status info hidden" id="requests-empty">
+        <i class="fa-solid fa-clipboard-check"></i>
+        <span>No verification requests.</span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>© <span id="year"></span> ogwXblacklist</span>
+    <span class="pill" title="Local device id used for likes/reports/your posts">
+      <i class="fa-solid fa-fingerprint"></i> <span id="client-id-short"></span>
+    </span>
+  </footer>
+
+  <!-- TOASTS -->
+  <div class="toast-container" id="toast-wrap" aria-live="polite"></div>
+
+  <!-- MODAL: REQUEST CHOICE -->
+  <div class="modal hidden" id="modal-request-choice">
+    <div class="modal-overlay" data-close="1"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2><i class="fa-solid fa-plus"></i> Create a post</h2>
+        <button class="icon-btn" data-close="1"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="choice-grid">
+          <button class="choice-card" id="choice-unverified">
+            <div class="choice-title"><i class="fa-solid fa-circle-question"></i> Post to Unverified</div>
+            <div class="choice-text">No cooldown. Proof optional.</div>
+          </button>
+          <button class="choice-card" id="choice-requested">
+            <div class="choice-title"><i class="fa-solid fa-user-check"></i> Post to Verified (Requested)</div>
+            <div class="choice-text">3-minute cooldown. Proof required.</div>
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-close="1">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: POST FORM -->
+  <div class="modal hidden" id="modal-post-form">
+    <div class="modal-overlay" data-close="1"></div>
+    <div class="modal-card modal-wide">
+      <div class="modal-header">
+        <h2 id="post-form-title"><i class="fa-solid fa-pen-to-square"></i> New Post</h2>
+        <button class="icon-btn" data-close="1"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="pf-username">Player username <span class="req">*</span></label>
+            <input id="pf-username" type="text" maxlength="32" placeholder="e.g. Player123" autocomplete="off">
+          </div>
+
+          <div class="form-group">
+            <label for="pf-title">Post name <span class="req">*</span></label>
+            <input id="pf-title" type="text" maxlength="80" placeholder="e.g. Exploiting in SBR" autocomplete="off">
+          </div>
+
+          <div class="form-group full">
+            <label for="pf-description">Description (optional)</label>
+            <textarea id="pf-description" rows="4" maxlength="800" placeholder="Details... (avoid personal info)"></textarea>
+          </div>
+
+          <div class="form-group full">
+            <label for="pf-media">Screenshots / Videos <span class="hint" id="pf-media-hint">(optional)</span></label>
+            <input id="pf-media" type="file" accept="image/*,video/*" multiple>
+            <small class="muted">Limits: images ≤ 5MB each, videos ≤ 10MB each, max 5 files total. Stored as base64 in the DB.</small>
+            <div class="media-preview" id="pf-media-preview"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-close="1">Cancel</button>
+        <button class="btn" id="pf-submit"><i class="fa-solid fa-paper-plane"></i> Post</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: VIEW POST -->
+  <div class="modal hidden" id="modal-view-post">
+    <div class="modal-overlay" data-close="1"></div>
+    <div class="modal-card modal-huge">
+      <div class="modal-header">
+        <h2><i class="fa-solid fa-eye"></i> View Post</h2>
+        <button class="icon-btn" data-close="1"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="post-view-head">
+          <div>
+            <h3 id="vp-title">—</h3>
+            <div class="chips">
+              <span class="chip"><i class="fa-solid fa-user"></i> <span id="vp-username">—</span></span>
+              <span class="chip"><i class="fa-solid fa-calendar"></i> <span id="vp-created">—</span></span>
+              <span class="chip" id="vp-category-chip"><i class="fa-solid fa-tag"></i> <span id="vp-category">—</span></span>
+              <span class="chip hidden" id="vp-verified-chip"><i class="fa-solid fa-check"></i> Verified: <span id="vp-verified">—</span></span>
+              <span class="chip declined hidden" id="vp-declined-chip"><i class="fa-solid fa-xmark"></i> Declined</span>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button class="btn btn-secondary btn-small" id="vp-like"><i class="fa-regular fa-thumbs-up"></i> <span id="vp-like-count">0</span></button>
+            <button class="btn btn-danger btn-small" id="vp-dislike"><i class="fa-regular fa-thumbs-down"></i> <span id="vp-dislike-count">0</span></button>
+            <button class="btn btn-warning btn-small" id="vp-report"><i class="fa-solid fa-flag"></i> Report</button>
+            <button class="btn btn-danger btn-small hidden" id="vp-delete"><i class="fa-solid fa-trash"></i> Delete</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="desc" id="vp-description">—</div>
+        <div class="media-gallery" id="vp-media"></div>
+        <small class="muted" id="vp-vote-hint"></small>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADMIN LOGIN -->
+  <div class="modal hidden" id="modal-admin-login">
+    <div class="modal-overlay" data-close="1"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2><i class="fa-solid fa-shield"></i> Admin Login</h2>
+        <button class="icon-btn" data-close="1"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid one">
+          <div class="form-group full">
+            <label for="ad-pass">Password</label>
+            <input id="ad-pass" type="password" placeholder="Enter password">
+          </div>
+          <div class="form-group full">
+            <label for="ad-token">Token</label>
+            <textarea id="ad-token" rows="3" placeholder="Paste token"></textarea>
+          </div>
+        </div>
+        <div class="warning-box">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          Admin mode is client-side. For real security, use Firebase Auth + locked rules.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-close="1">Cancel</button>
+        <button class="btn" id="ad-login"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
