@@ -32,17 +32,19 @@ body{
 }
 .header-content{
   display:flex;
-  justify-content:space-between;
+  justify-content:flex-start;
   align-items:center;
   max-width:1200px;
   margin:0 auto;
-  gap: 16px;
+  gap:16px;
+}
+nav{
+  margin-left:auto;
 }
 .logo{
   display:flex;
   align-items:center;
   gap: 10px;
-  margin-left: 56px;   /* moves logo to red position */
 }
 .logo i{
   font-size: 1.9rem;
